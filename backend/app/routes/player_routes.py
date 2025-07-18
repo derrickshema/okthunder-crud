@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from ..db import session
 
@@ -18,12 +18,12 @@ async def create_player(player: Player, session: Session = Depends(session.get_s
     session.refresh(player)
     return player
 
-@router.get("/players", response_model=list[Player])
+@router.get("/", response_model=list[Player])
 async def get_players(session: Session = Depends(session.get_session)):
     """
     Retrieve all players.
     """
-    players = session.exec(Player).all()
+    players = session.exec(select(Player)).all()
     return players
 
 @router.get("/{player_id}", response_model=Player)
@@ -38,6 +38,9 @@ def read_player(player_id: int, session: Session = Depends(session.get_session))
 
 @router.put("/{player_id}", response_model=Player)
 def update_player(player_id: int, updated_player: Player, session: Session = Depends(session.get_session)):
+    """
+    Update one player.
+    """
     db_player = session.get(Player, player_id)
     if not db_player:
         raise HTTPException(status_code=404, detail="Player not found")
@@ -50,6 +53,9 @@ def update_player(player_id: int, updated_player: Player, session: Session = Dep
 
 @router.delete("/{player_id}", response_model=None)
 def delete_player(player_id: int, session: Session = Depends(session.get_session)):
+    """
+    Delete one player.
+    """
     player = session.get(Player, player_id)
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
