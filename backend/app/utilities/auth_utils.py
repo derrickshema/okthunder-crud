@@ -5,7 +5,7 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 
 # --- Password Hashing ---
-pwd_context = CryptContext(schemes=["bycrypt"], depracted=["auto"])
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated=["auto"])
 
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt."""

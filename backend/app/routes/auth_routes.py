@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 
-from ..db import get_session
-from ..models import User, UserCreate, UserResponse, Token # Import new models
-from ..utilities.auth_utils import verify_password, get_password_hash, create_access_token, decode_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from ..db.session import get_session
+from ..models.users import User, UserCreate, UserResponse, Token # Import new models
+from ..utilities.auth_utils import verify_password, hash_password, create_access_token, decode_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Initialize OAuth2PasswordBearer
 # tokenUrl specifies the endpoint where clients can obtain a token (login)
@@ -58,7 +58,7 @@ async def register_user(user_in: UserCreate, session: Session = Depends(get_sess
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
 
     # Hash the password before storing
-    hashed_password = get_password_hash(user_in.password)
+    hashed_password = hash_password(user_in.password)
     db_user = User(username=user_in.username, hashed_password=hashed_password, email=user_in.email)
 
     session.add(db_user)

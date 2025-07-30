@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
-from ..db import session
+from ..models.users import User
+
+from .auth_routes import get_current_user
+
+from ..db.session import get_session
 
 from ..models.player import Player
 
@@ -9,7 +13,11 @@ from ..models.player import Player
 router = APIRouter(prefix="/player", tags=["Player"])
 
 @router.post("/create", response_model=Player)
-async def create_player(player: Player, session: Session = Depends(session.get_session)):
+async def create_player(
+    player: Player, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+    ):
     """
     Create a new player.
     """
@@ -19,7 +27,7 @@ async def create_player(player: Player, session: Session = Depends(session.get_s
     return player
 
 @router.get("/", response_model=list[Player])
-async def get_players(session: Session = Depends(session.get_session)):
+async def get_players(session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """
     Retrieve all players.
     """
@@ -27,7 +35,7 @@ async def get_players(session: Session = Depends(session.get_session)):
     return players
 
 @router.get("/{player_id}", response_model=Player)
-def read_player(player_id: int, session: Session = Depends(session.get_session)):
+def read_player(player_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """
     Retrieve one player.
     """
@@ -37,7 +45,7 @@ def read_player(player_id: int, session: Session = Depends(session.get_session))
     return player
 
 @router.put("/{player_id}", response_model=Player)
-def update_player(player_id: int, updated_player: Player, session: Session = Depends(session.get_session)):
+def update_player(player_id: int, updated_player: Player, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """
     Update one player.
     """
@@ -52,7 +60,7 @@ def update_player(player_id: int, updated_player: Player, session: Session = Dep
     return db_player
 
 @router.delete("/{player_id}", response_model=None)
-def delete_player(player_id: int, session: Session = Depends(session.get_session)):
+def delete_player(player_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """
     Delete one player.
     """

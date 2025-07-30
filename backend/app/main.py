@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .routes.player_routes import router as player_router
+from .routes.auth_routes import router as auth_router
 from .db.database import engine
 from sqlmodel import SQLModel
 
@@ -25,6 +26,7 @@ app.add_middleware(
 
 # Include routers (e.g., player routes)
 app.include_router(player_router)
+app.include_router(auth_router)
 
 # Mount static files directory (for serving images, if needed)
 # app.mount("/static", StaticFiles(directory="static"), name="static")
