@@ -8,7 +8,7 @@ class Player(SQLModel, table=True):
     first_name: str = Field(max_length=50)
     last_name: str = Field(max_length=50)
     age: int
-    height: float
+    height: str = Field(max_length=10)  # e.g., "6'7"
     position: str = Field(max_length=20)
     bio: Optional[str] = Field(default=None, max_length=500)
     image_url: Optional[str] = Field(default=None, max_length=200)

@@ -70,10 +70,70 @@
             }
         })(); // Immediately invoke the subscribe callback
     });
+
+    // Function to handle player creation (redirect to create page)
+    function createPlayer() {
+        goto('/players/create');
+    }
+
+    // Function to handle player edit (placeholder for now)
+    async function editPlayer(playerId: number) {
+        // This function can be implemented to open a modal or redirect to an edit form page
+        goto(`/players/edit/${playerId}`);
+    }
+
+    // Function to handle player deletion (placeholder for now)
+    async function deletePlayer(playerId: number) {
+        // This function can be implemented to confirm deletion and call the API
+        isLoading = true;
+        message = '';
+        isError = false;
+
+        const token = localStorage.getItem('access_token');
+
+        if (!token) {
+            message = 'You are not authenticated. Please log in.';
+            isError = true;
+            isLoading = false;
+            goto('/login'); // Redirect if no token
+            return;
+        }
+        try {
+            const response = await fetch(`http://localhost:8000/player/${playerId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (response.ok) {
+                players = players.filter(player => player.id !== playerId);
+                message = 'Player deleted successfully!';
+                isError = false;
+            } else if (response.status === 401) {
+                message = 'Authentication failed. Please log in again.';
+                isError = true;
+                localStorage.removeItem('access_token'); // Clear invalid token
+                accessToken.set(null); // Update store
+                goto('/login'); // Redirect to login
+            } else {
+                const errorData = await response.json();
+                message = `Failed to delete player: ${errorData.detail || 'Unknown error'}`;
+                isError = true;
+            }
+        } catch (error) {
+            message = 'Network error or server unreachable.';
+            isError = true;
+            console.error('Delete player error:', error);
+        }finally {
+            isLoading = false;
+        }
+    }
 </script>
 
 <div class="max-w-4xl mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg">
     <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">OKC Thunder Players</h2>
+    <button onclick={createPlayer} class="bg-blue-500 text-white font-semibold py-2 px-4 mb-4">+ Add New Player</button>
 
     {#if isLoading}
         <p class="text-center text-blue-600">Loading players...</p>
@@ -89,6 +149,10 @@
                     <h3 class="text-xl font-semibold text-center mb-1">{player.first_name} {player.last_name}</h3>
                     <p class="text-gray-600 text-center text-sm">Age: {player.age} | Height: {player.height} | Position: {player.position}</p>
                     <p class="text-gray-500 text-center text-xs mt-2">{player.bio}</p>
+                    <div class="mt-4 flex justify-center space-x-2">
+                        <button onclick={()=>editPlayer(player.id)} class="bg-blue-500 text-white font-semibold py-1 px-3 rounded hover:bg-blue-600">Edit</button>
+                        <button onclick={()=>deletePlayer(player.id)} class="bg-red-500 text-white font-semibold py-1 px-3 rounded hover:bg-red-600">Delete</button>
+                    </div>
                 </div>
             {/each}
         </div>
